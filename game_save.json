@@ -1,10 +1,10 @@
 {
     "player": {
         "map": 1,
-        "x": 340,
-        "y": 625,
+        "x": 660,
+        "y": 150,
         "level": 8,
-        "experience": 60,
+        "experience": 80,
         "health": 100,
         "money": 0,
         "inventory": [
@@ -22,7 +22,27 @@
             {
                 "id": 2,
                 "type": "seed",
-                "quantity": 3
+                "quantity": 5
+            },
+            {
+                "id": 2,
+                "type": "seed",
+                "quantity": 1
+            },
+            {
+                "id": 2,
+                "type": "seed",
+                "quantity": 1
+            },
+            {
+                "id": 2,
+                "type": "seed",
+                "quantity": 1
+            },
+            {
+                "id": 2,
+                "type": "seed",
+                "quantity": 1
             },
             {
                 "id": 2,

@@ -14,7 +14,7 @@ class Map:
                     pygame.Rect(1200, 800, 200, 50),
                 ],
                 "transition_zones": [
-                    {"zone": pygame.Rect(1950, 950, 50, 100), "target_map": 1, "start_pos": (50, 725)}
+                    {"zone": pygame.Rect(1950, 950, 50, 100), "target_map": 1, "start_pos": (80, 725)}
                 ],
                 "map_index": 0,
                 "items": [] # 아이템 정보 추가
@@ -27,7 +27,7 @@ class Map:
                     pygame.Rect(700, 500, 100, 100),
                 ],
                 "transition_zones": [
-                    {"zone": pygame.Rect(0, 700, 50, 100), "target_map": 0, "start_pos": (1850, 975)}
+                    {"zone": pygame.Rect(0, 700, 50, 100), "target_map": 0, "start_pos": (1880, 975)}
                 ],
                 "map_index": 1,
                 "items": [] # 아이템 정보 추가
