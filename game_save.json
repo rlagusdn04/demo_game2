@@ -1,0 +1,22 @@
+{
+    "player": {
+        "map": 1,
+        "x": 250,
+        "y": 615,
+        "level": 1,
+        "experience": 70,
+        "health": 100,
+        "money": 0,
+        "inventory": []
+    },
+    "npcs": [
+        {
+            "id": 0,
+            "name": "Leah",
+            "type": "shop",
+            "map": 0,
+            "x": 150,
+            "y": 150
+        }
+    ]
+}
