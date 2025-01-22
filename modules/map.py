@@ -120,12 +120,13 @@ class SeedManager:
             if not any(transition_zone.collidepoint(seed_position) for transition_zone in transition_zones):
                 break
 
-        seed_type = random.choice(["type1", "type2", "type3"])
+        seed_id = random.choice([1, 2, 3])
         seed_item = {
             "map_index": map_index,
             "position": seed_position,
             "type": "seed",
-            "seed_type": seed_type,
+            "id": seed_id,
+
         }
 
         # Map 클래스에 씨앗 추가

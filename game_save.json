@@ -1,13 +1,45 @@
 {
     "player": {
         "map": 1,
-        "x": 250,
-        "y": 615,
-        "level": 1,
-        "experience": 70,
+        "x": 340,
+        "y": 625,
+        "level": 8,
+        "experience": 60,
         "health": 100,
         "money": 0,
-        "inventory": []
+        "inventory": [
+            {
+                "id": 1,
+                "type": "seed",
+                "name": "Carrot Seed",
+                "quantity": 11
+            },
+            {
+                "id": 3,
+                "type": "seed",
+                "quantity": 2
+            },
+            {
+                "id": 2,
+                "type": "seed",
+                "quantity": 3
+            },
+            {
+                "id": 2,
+                "type": "seed",
+                "quantity": 1
+            },
+            {
+                "id": 2,
+                "type": "seed",
+                "quantity": 1
+            },
+            {
+                "id": 2,
+                "type": "seed",
+                "quantity": 1
+            }
+        ]
     },
     "npcs": [
         {

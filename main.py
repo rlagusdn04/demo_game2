@@ -37,30 +37,28 @@ def main():
     SaveLoad.load_game(player, game_map, npc_manager)
 
     while running:
+        dt = clock.tick(60)  # 밀리초 단위의 경과 시간 계산
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             camera.toggle_inventory(event)  # 인벤토리 토글
 
-        
-
         keys = pygame.key.get_pressed()
-        player.move(keys, game_map, collision_manager)
+        player.move(keys, game_map, collision_manager, dt)  # dt를 전달
 
         camera.update(player)
         npc_manager.update(game_map)
 
         game_map.draw(screen, camera, seed_manager)
         player.draw(screen, camera)
-        npc_manager.draw(screen,camera)
-
+        npc_manager.draw(screen, camera)
 
         # UI 표시 (체력, 경험치, 돈, 인벤토리 등)
         camera.draw_ui(player)
         camera.draw_inventory(player)
 
         pygame.display.flip()
-        clock.tick(60)
 
     # 게임 종료 시 자동 저장
     SaveLoad.save_game(player, game_map, npc_manager)
@@ -68,3 +66,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

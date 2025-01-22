@@ -8,7 +8,7 @@ class SpriteSheet:
     def get_image(self, x, y, width, height):
         image = pygame.Surface((width, height), pygame.SRCALPHA)
         image.blit(self.sheet, (0, 0), (x, y, width, height))
-        
+
         # 축소된 이미지 반환
         if self.scale_factor != 1:
             new_width = int(width * self.scale_factor)
@@ -32,7 +32,6 @@ class Animation:
     def get_current_image(self):
         return self.images[self.current_frame]
 
-
 class CollisionManager:
     def __init__(self, game_map):
         self.game_map = game_map
@@ -46,12 +45,16 @@ class CollisionManager:
     def check_item_collision(self, player_rect, items):
         """플레이어와 충돌한 아이템 반환"""
         for item in items:
-            item_rect = pygame.Rect(item["position"][0], item["position"][1], 15, 15)  # 아이템 크기를 10x10으로 가정
+            item_width = 40  # 기본 아이템 크기기
+            item_rect = pygame.Rect(
+                item["position"][0],  
+                item["position"][1],               
+                item_width,        
+                item_width                
+            )
             if player_rect.colliderect(item_rect):
                 return item
         return None
-
-
 
     def check_transition_zone(self, player_rect, transition_zones):
         for zone in transition_zones:
@@ -60,7 +63,7 @@ class CollisionManager:
         return None
 
 class Player:
-    def __init__(self, x, y, size, speed,sprite_sheet):
+    def __init__(self, x, y, size, speed, sprite_sheet):
         self.x = x
         self.y = y
         self.size = size
@@ -72,9 +75,13 @@ class Player:
         self.inventory = []
         self.color = (0, 255, 0)
         self.current_animation = "stand"
-        
 
-         # 애니메이션 초기화
+        # 상태 관리 초기화
+        self.state = "idle"  # "idle", "moving", "picking_up"
+        self.state_timer = 0
+        self.pick_up_timer = 0
+
+        # 애니메이션 초기화
         self.animations = {
             "stand": [
                 sprite_sheet.get_image(0, 0, 128, 128),
@@ -93,7 +100,7 @@ class Player:
                 sprite_sheet.get_image(128*2, 128*7, 128, 128)
             ],
             "walk_left": [
-                 pygame.transform.flip(img, True, False)
+                pygame.transform.flip(img, True, False)
                 for img in [
                     sprite_sheet.get_image(0, 0, 128, 128),
                     sprite_sheet.get_image(128, 0, 128, 128),
@@ -105,68 +112,91 @@ class Player:
                 sprite_sheet.get_image(128, 0, 128, 128),
                 sprite_sheet.get_image(128*2, 0, 128, 128),
             ],
-            "pick_up":[
+            "pick_up_right": [
                 sprite_sheet.get_image(0, 128, 128, 128),
                 sprite_sheet.get_image(128, 128, 128, 128),
             ],
+            "pick_up_left": [
+                pygame.transform.flip(img, True, False)
+                for img in [
+                    sprite_sheet.get_image(0, 128, 128, 128),
+                    sprite_sheet.get_image(128, 128, 128, 128),
+                ]
+            ],
         }
         self.animator = Animation(self.animations[self.current_animation], 100)
-        
 
-    def move(self, keys, game_map, collision_manager):
+    def move(self, keys, game_map, collision_manager, dt):
+    
         current_map = game_map.get_current_map()
         map_width, map_height = current_map["size"]
         obstacles = current_map["obstacles"]
         transition_zones = current_map["transition_zones"]
         items = current_map["items"]
-        
 
         new_x, new_y = self.x, self.y
+
+        if self.state == "picking_up":
+            self.state_timer -= dt
+            if self.state_timer <= 0:
+                self.state = "idle"
+                self.current_animation = "stand"
+            return
 
         if keys[pygame.K_w]:
             new_y -= self.speed
             self.current_animation = "walk_up"
+            self.state = "moving"
         if keys[pygame.K_s]:
             new_y += self.speed
             self.current_animation = "walk_down"
+            self.state = "moving"
         if keys[pygame.K_a]:
             new_x -= self.speed
             self.current_animation = "walk_left"
+            self.state = "moving"
         if keys[pygame.K_d]:
             new_x += self.speed
             self.current_animation = "walk_right"
-        # else:
-        #     self.current_animation = "stand"
+            self.state = "moving"
+        else:
+            self.state = "idle"
 
-
-        # Prevent player from moving outside the map boundaries
         new_x = max(0, min(new_x, map_width - self.size))
         new_y = max(0, min(new_y, map_height - self.size))
+        player_rect = pygame.Rect(
+                    new_x - 20,  # 가로 중심 조정
+                    new_y,
+                    self.size + 40, # 오른쪽 크기 확대
+                    self.size 
+                    )
 
-        player_rect = pygame.Rect(new_x, new_y, self.size, self.size)
-
-        # 애니메이션 업데이트
         if self.animator.images != self.animations[self.current_animation]:
             self.animator = Animation(self.animations[self.current_animation], 200)
-        self.animator.update(1000 / 60)
+        self.animator.update(dt)
 
-
-
-        # Obstacle collision
         if not collision_manager.check_obstacle_collision(player_rect, obstacles):
             self.x = new_x
             self.y = new_y
-    
 
-        # Item collision
         collided_item = collision_manager.check_item_collision(player_rect, items)
         if collided_item:
             if keys[pygame.K_e]:
-                self.add_item(collided_item, game_map)
-                self.current_animation = "pick_up"
 
+                item_x, item_y = collided_item["position"]
+                if item_x >= self.x:
+                    self.current_animation = "pick_up_right"
+                else:
+                    self.current_animation = "pick_up_left"
+            
+                self.pick_up_timer += dt
+                if self.pick_up_timer >= 2000:  # 2초 이상 눌렀을 경우
+                    self.state = "picking_up"
+                    self.add_item(collided_item, game_map)
+                    self.pick_up_timer = 0
+            else:
+                self.pick_up_timer = 0
 
-        # Transition zone collision
         transition_zone = collision_manager.check_transition_zone(player_rect, transition_zones)
         if transition_zone:
             collision_manager.game_map.change_map(
@@ -175,17 +205,23 @@ class Player:
                 self
             )
 
-
     def draw(self, screen, camera):
-        pygame.draw.rect(
-            screen,
-            self.color,
-            (self.x - camera.camera_x, self.y - camera.camera_y, self.size, self.size),
-        )
-
+        # 현재 애니메이션 이미지 가져오기
         current_image = self.animator.get_current_image()
         screen.blit(current_image, (self.x - camera.camera_x - 16, self.y - camera.camera_y - 24))
-
+        
+        # 줍는 범위 사각형 계산
+        pick_up_rect = pygame.Rect(
+            self.x - camera.camera_x - 20,  # 왼쪽으로 20만큼 확장
+            self.y - camera.camera_y,
+            self.size + 40,                # 가로 크기 확장
+            self.size                      # 세로 크기
+        )
+        
+        # 줍는 범위 표시 (반투명 녹색)
+        surface = pygame.Surface((pick_up_rect.width, pick_up_rect.height), pygame.SRCALPHA)
+        surface.fill((0, 255, 0, 100))  # RGBA 형식으로 알파값(투명도) 설정
+        screen.blit(surface, (pick_up_rect.x, pick_up_rect.y))
 
     def set_position(self, x, y):
         self.x = x
@@ -202,19 +238,23 @@ class Player:
 
     def add_health(self, health):
         self.health += health
-    
-    def add_item(self, item, game_map):
 
-        # 아이템 분류
+    def add_item(self, item, game_map):
         item_type = item.get("type")
+        item_id = item.get("id")
         if item_type == "seed":
-            # 씨앗을 습득하면 경험치를 10 추가
             self.add_experience(10)
 
-        # 인벤토리에 이미 존재하는 동일 아이템 확인
         for inventory_item in self.inventory:
-            if inventory_item["type"] == item_type:
+            if inventory_item["id"] == item_id:
                 inventory_item["quantity"] += 1
                 break
+            else:
+                # inventory에 아이템이 없으면 새로 추가
+                self.inventory.append({
+                    "id": item_id,
+                    "type": item_type,
+                    "quantity": 1
+                })
 
         game_map.remove_item(item)
