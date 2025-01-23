@@ -26,7 +26,7 @@ def main():
     sprite_sheet = SpriteSheet("ditto.png")
 
     # 객체 생성
-    player = Player(100, 100, 32, 5, sprite_sheet)
+    player = Player(100, 100, 40, 5, sprite_sheet)
     game_map = Map()
     npc_manager = NPCManager()  # NPCManager 인스턴스화
     camera = Camera(screen_width, screen_height, game_map, screen)

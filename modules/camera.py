@@ -23,7 +23,7 @@ class Camera:
         map_width, map_height = current_map["size"]
 
         # Lerp for smooth movement
-        lerp_factor = 0.5
+        lerp_factor = 1
         self.camera_x += (target_x - self.camera_x) * lerp_factor
         self.camera_y += (target_y - self.camera_y) * lerp_factor
 
@@ -54,7 +54,34 @@ class Camera:
         self.screen.blit(exp_text, (10, 40))
         self.screen.blit(money_text, (10, 55))
 
+
     def draw_inventory(self, player):
         if self.show_inventory:
-            inventory_text = self.font.render(f"Inventory: {player.inventory}", True, self.color)
-            self.screen.blit(inventory_text, (10, 70))
+            # 배경 박스 설정
+            padding = 10
+            box_width = 200
+            line_height = 20
+            inventory_height = len(player.inventory) * line_height + padding * 2
+            box_x = 10
+            box_y = 70
+
+            # 배경 박스 그리기
+            pygame.draw.rect(self.screen, (200, 200, 200), (box_x, box_y, box_width, inventory_height))
+            pygame.draw.rect(self.screen, (0, 0, 0), (box_x, box_y, box_width, inventory_height), 2)
+
+            # 인벤토리 항목 렌더링
+            for i, item in enumerate(player.inventory):
+                item_name = item["name"]
+                item_quantity = item["quantity"]
+
+                # 텍스트 렌더링
+                inventory_text = self.font.render(f"{item_name}: {item_quantity}", True, (0, 0, 0))
+                text_x = box_x + padding
+                text_y = box_y + padding + i * line_height
+
+                # 텍스트 그리기
+                self.screen.blit(inventory_text, (text_x, text_y))
+
+
+
+

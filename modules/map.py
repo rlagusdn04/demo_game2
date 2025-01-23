@@ -75,8 +75,9 @@ class Map:
                 screen,
                 (255, 255, 0),  # Yellow for seeds
                 (item["position"][0] - camera.camera_x, item["position"][1] - camera.camera_y),
-                5,
+                5
             )
+            
 
         
         seed_manager.update(current_map)
@@ -134,3 +135,18 @@ class SeedManager:
         print(f"씨앗 생성: {seed_position}")
 
 
+class Item_Sheet:
+    def __init__(self, file_path, scale_factor=0.5):
+        self.sheet = pygame.image.load(file_path)
+        self.scale_factor = scale_factor
+
+    def get_image(self, x, y, width, height):
+        image = pygame.Surface((width, height), pygame.SRCALPHA)
+        image.blit(self.sheet, (0, 0), (x, y, width, height))
+
+        # 축소된 이미지 반환
+        if self.scale_factor != 1:
+            new_width = int(width * self.scale_factor)
+            new_height = int(height * self.scale_factor)
+            image = pygame.transform.scale(image, (new_width, new_height))
+        return image

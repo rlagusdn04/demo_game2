@@ -45,11 +45,11 @@ class CollisionManager:
     def check_item_collision(self, player_rect, items):
         """플레이어와 충돌한 아이템 반환"""
         for item in items:
-            item_width = 40  # 기본 아이템 크기기
+            item_width = 40  # 기본 아이템 크기
             item_rect = pygame.Rect(
-                item["position"][0],  
+                item["position"][0] - 20,  
                 item["position"][1],               
-                item_width,        
+                item_width + 20,        
                 item_width                
             )
             if player_rect.colliderect(item_rect):
@@ -69,8 +69,10 @@ class Player:
         self.size = size
         self.speed = speed
         self.health = 100
+        self.hp_MAX = 100
         self.level = 1
         self.experience = 0
+        self.exp_MAX = 100
         self.money = 0
         self.inventory = []
         self.color = (0, 255, 0)
@@ -80,6 +82,7 @@ class Player:
         self.state = "idle"  # "idle", "moving", "picking_up"
         self.state_timer = 0
         self.pick_up_timer = 0
+        self.level_up_timer = 0
 
         # 애니메이션 초기화
         self.animations = {
@@ -123,6 +126,20 @@ class Player:
                     sprite_sheet.get_image(128, 128, 128, 128),
                 ]
             ],
+            "level_up": [
+                    sprite_sheet.get_image(128*0, 128*8, 128, 128),
+                    pygame.transform.flip(sprite_sheet.get_image(128*0, 128*8, 128, 128), True, False),
+                    sprite_sheet.get_image(128*1, 128*8, 128, 128),
+                    pygame.transform.flip(sprite_sheet.get_image(128*1, 128*8, 128, 128), True, False),
+                    sprite_sheet.get_image(128*2, 128*8, 128, 128),
+                    pygame.transform.flip(sprite_sheet.get_image(128*2, 128*8, 128, 128), True, False),
+                    sprite_sheet.get_image(128*3, 128*8, 128, 128),
+                    pygame.transform.flip(sprite_sheet.get_image(128*3, 128*8, 128, 128), True, False),
+                    sprite_sheet.get_image(128*4, 128*8, 128, 128),
+                    pygame.transform.flip(sprite_sheet.get_image(128*4, 128*8, 128, 128), True, False),
+    
+            ],
+        
         }
         self.animator = Animation(self.animations[self.current_animation], 100)
 
@@ -136,13 +153,7 @@ class Player:
 
         new_x, new_y = self.x, self.y
 
-        if self.state == "picking_up":
-            self.state_timer -= dt
-            if self.state_timer <= 0:
-                self.state = "idle"
-                self.current_animation = "stand"
-            return
-
+        
         if keys[pygame.K_w]:
             new_y -= self.speed
             self.current_animation = "walk_up"
@@ -159,15 +170,23 @@ class Player:
             new_x += self.speed
             self.current_animation = "walk_right"
             self.state = "moving"
-        else:
-            self.state = "idle"
+
+        if self.state == "idle":
+            self.current_animation = "stand"
+
+        if self.level_up_timer > 0:
+            self.current_animation = "level_up"
+            self.level_up_timer -= dt
+
+
+        
 
         new_x = max(0, min(new_x, map_width - self.size))
         new_y = max(0, min(new_y, map_height - self.size))
         player_rect = pygame.Rect(
-                    new_x - 20,  # 가로 중심 조정
+                    new_x,  # 가로 중심 조정
                     new_y,
-                    self.size + 40, # 오른쪽 크기 확대
+                    self.size, # 오른쪽 크기 확대
                     self.size 
                     )
 
@@ -191,8 +210,8 @@ class Player:
             
                 self.pick_up_timer += dt
                 if self.pick_up_timer >= 2000:  # 2초 이상 눌렀을 경우
-                    self.state = "picking_up"
                     self.add_item(collided_item, game_map)
+                    self.state = "idle"
                     self.pick_up_timer = 0
             else:
                 self.pick_up_timer = 0
@@ -208,20 +227,20 @@ class Player:
     def draw(self, screen, camera):
         # 현재 애니메이션 이미지 가져오기
         current_image = self.animator.get_current_image()
-        screen.blit(current_image, (self.x - camera.camera_x - 16, self.y - camera.camera_y - 24))
+        screen.blit(current_image, (self.x - camera.camera_x - 16, self.y - camera.camera_y - 16))
         
-        # 줍는 범위 사각형 계산
-        pick_up_rect = pygame.Rect(
-            self.x - camera.camera_x - 20,  # 왼쪽으로 20만큼 확장
-            self.y - camera.camera_y,
-            self.size + 40,                # 가로 크기 확장
-            self.size                      # 세로 크기
-        )
+        # # 줍는 범위 사각형 계산
+        # pick_up_rect = pygame.Rect(
+        #     self.x - camera.camera_x,  
+        #     self.y - camera.camera_y,
+        #     self.size,                # 가로 크기 확장
+        #     self.size                      # 세로 크기
+        # )
         
-        # 줍는 범위 표시 (반투명 녹색)
-        surface = pygame.Surface((pick_up_rect.width, pick_up_rect.height), pygame.SRCALPHA)
-        surface.fill((0, 255, 0, 100))  # RGBA 형식으로 알파값(투명도) 설정
-        screen.blit(surface, (pick_up_rect.x, pick_up_rect.y))
+        # # 줍는 범위 표시 (반투명 녹색)
+        # surface = pygame.Surface((pick_up_rect.width, pick_up_rect.height), pygame.SRCALPHA)
+        # surface.fill((0, 255, 0, 100))  # RGBA 형식으로 알파값(투명도) 설정
+        # screen.blit(surface, (pick_up_rect.x, pick_up_rect.y))
 
     def set_position(self, x, y):
         self.x = x
@@ -229,15 +248,23 @@ class Player:
 
     def add_experience(self, exp):
         self.experience += exp
-        if self.experience >= 100 and self.level < 10:
-            self.level += 1
-            self.experience = 0
+        if self.experience >= self.exp_MAX and self.level < 10:
+            self.add_level()
+            self.experience -= self.exp_MAX
+
+    def add_level(self):
+        self.level += 1
+        self.state = "level_up"  # 상태 전환
+        self.level_up_timer = 2000
+        self.add_health(self.hp_MAX)
 
     def add_money(self, money):
         self.money += money
 
     def add_health(self, health):
         self.health += health
+        if self.health >= self.hp_MAX:
+            self.health = self.hp_MAX
 
     def add_item(self, item, game_map):
         item_type = item.get("type")
@@ -245,16 +272,20 @@ class Player:
         if item_type == "seed":
             self.add_experience(10)
 
+        add_check = False
+
         for inventory_item in self.inventory:
             if inventory_item["id"] == item_id:
                 inventory_item["quantity"] += 1
+                add_check = True
                 break
-            else:
-                # inventory에 아이템이 없으면 새로 추가
-                self.inventory.append({
-                    "id": item_id,
-                    "type": item_type,
-                    "quantity": 1
-                })
+            
+        # inventory에 아이템이 없으면 새로 추가
+        if add_check == False:
+            self.inventory.append({
+                "id": item_id,
+                "type": item_type,
+                "quantity": 1
+            })
 
         game_map.remove_item(item)
