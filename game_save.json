@@ -1,10 +1,10 @@
 {
     "player": {
-        "map": 1,
-        "x": 635,
-        "y": 280,
-        "level": -103,
-        "experience": 10830,
+        "map": 0,
+        "x": 110,
+        "y": 175,
+        "level": -100,
+        "experience": 10560,
         "health": 100,
         "money": 0,
         "inventory": [
@@ -12,7 +12,7 @@
                 "id": 1,
                 "type": "seed",
                 "name": "Carrot Seed",
-                "quantity": 37
+                "quantity": 38
             },
             {
                 "id": 2,
@@ -24,7 +24,7 @@
                 "id": 3,
                 "type": "seed",
                 "name": "apple Seed",
-                "quantity": 44
+                "quantity": 46
             }
         ]
     },

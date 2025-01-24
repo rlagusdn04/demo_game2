@@ -10,12 +10,17 @@ class NPC:
         self.y = y
         self.width = 32
         self.height = 32  # 높이 추가 (사각형 형태로 그릴 경우 필요)
+        #대사 추가 self.
 
     def draw(self, screen, camera):
         draw_x = self.x - camera.camera_x
         draw_y = self.y - camera.camera_y
 
         pygame.draw.rect(screen, (0, 255, 0), (draw_x, draw_y, self.width, self.height))
+
+    def interact(self):
+        """Player와 상호작용"""
+        print(self.name)
 
     def update(self):
         pass
@@ -42,3 +47,10 @@ class NPCManager:
     def draw(self, screen, camera):
         for npc in self.updated_npcs:  # 업데이트된 NPC만 그려짐
             npc.draw(screen, camera)  # 각 NPC의 draw 메서드를 호출
+
+    def handle_interactions(self, player_rect, keys):
+        """플레이어와 NPC 상호작용을 처리"""
+        for npc in self.updated_npcs:
+            npc_rect = pygame.Rect(npc.x, npc.y, npc.width, npc.height)
+            if player_rect.colliderect(npc_rect) and keys[pygame.K_e]:
+                npc.interact()

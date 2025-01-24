@@ -61,6 +61,13 @@ class CollisionManager:
             if player_rect.colliderect(zone["zone"]):
                 return zone
         return None
+    
+    def check_npc_collision(self, player_rect, npcs):
+        for npc in npcs:
+            npc_rect = pygame.Rect(npc.x, npc.y, npc.width, npc.height)
+            if player_rect.colliderect(npc_rect):
+                return True
+        return False
 
 class Player:
     def __init__(self, x, y, size, speed, sprite_sheet):
@@ -143,7 +150,7 @@ class Player:
         }
         self.animator = Animation(self.animations[self.current_animation], 100)
 
-    def move(self, keys, game_map, collision_manager, dt):
+    def move(self, keys, game_map, collision_manager, dt, npc_manager):
     
         current_map = game_map.get_current_map()
         map_width, map_height = current_map["size"]
@@ -179,8 +186,7 @@ class Player:
             self.level_up_timer -= dt
 
 
-        
-
+    
         new_x = max(0, min(new_x, map_width - self.size))
         new_y = max(0, min(new_y, map_height - self.size))
         player_rect = pygame.Rect(
@@ -194,10 +200,27 @@ class Player:
             self.animator = Animation(self.animations[self.current_animation], 200)
         self.animator.update(dt)
 
-        if not collision_manager.check_obstacle_collision(player_rect, obstacles):
-            self.x = new_x
-            self.y = new_y
+        # 충돌 검사: 장애물 + NPC
+        if not collision_manager.check_obstacle_collision(player_rect, obstacles) and \
+            not collision_manager.check_npc_collision(player_rect, npc_manager.updated_npcs):
+                self.x = new_x
+                self.y = new_y
 
+
+        transition_zone = collision_manager.check_transition_zone(player_rect, transition_zones)
+        if transition_zone:
+            collision_manager.game_map.change_map(
+                transition_zone["target_map"],
+                transition_zone["start_pos"],
+                self
+            )
+
+        self.pick(keys,items,collision_manager,player_rect,dt,game_map)
+
+        # NPC 상호작용 호출
+        self.interact_with_npcs(keys, npc_manager)
+
+    def pick(self,keys,items,collision_manager,player_rect,dt,game_map):
         collided_item = collision_manager.check_item_collision(player_rect, items)
         if collided_item:
             if keys[pygame.K_e]:
@@ -216,13 +239,17 @@ class Player:
             else:
                 self.pick_up_timer = 0
 
-        transition_zone = collision_manager.check_transition_zone(player_rect, transition_zones)
-        if transition_zone:
-            collision_manager.game_map.change_map(
-                transition_zone["target_map"],
-                transition_zone["start_pos"],
-                self
-            )
+    def interact_with_npcs(self, keys, npc_manager):
+        """NPC와 상호작용을 처리"""
+        for npc in npc_manager.updated_npcs:
+            npc_rect = pygame.Rect(npc.x, npc.y, npc.width + 10, npc.height + 10)
+            player_rect = pygame.Rect(self.x, self.y, self.size, self.size)
+
+            if player_rect.colliderect(npc_rect):  # 충돌 감지
+                if keys[pygame.K_e]:  # 'E' 키를 눌렀을 때
+                    npc.interact()  # 해당 NPC와 상호작용
+
+            
 
     def draw(self, screen, camera):
         # 현재 애니메이션 이미지 가져오기
