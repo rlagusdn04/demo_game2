@@ -24,18 +24,19 @@ class SaveLoad:
                     "map": npc.map_index,
                     "x": npc.x,
                     "y": npc.y,
+                    "dialogue": npc.dialogue,  # 오타 수정
                 }
                 for npc in npc_manager.npcs
             ]
         }
-        with open(file_path, "w") as file:
+        with open(file_path, "w", encoding="utf-8") as file: 
             json.dump(data, file, indent=4)
         print("게임과 NPC 정보가 저장되었습니다!")
 
     @staticmethod
     def load_game(player, map, npc_manager, file_path="game_save.json"):
         try:
-            with open(file_path, "r") as file:
+            with open(file_path, "r", encoding="utf-8") as file:  # UTF-8 인코딩 지정
                 data = json.load(file)
 
             # 게임 상태 로드
@@ -58,7 +59,8 @@ class SaveLoad:
                     npc_data["type"], 
                     npc_data["map"], 
                     npc_data["x"], 
-                    npc_data["y"]
+                    npc_data["y"],
+                    npc_data.get("dialogue", ["..."])  # 올바른 키로 로드
                 )
                 npc_manager.add_npc(npc)  # NPC를 NPCManager에 추가
 

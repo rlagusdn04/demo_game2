@@ -57,6 +57,7 @@ def main():
 
         game_map.draw(screen, camera, seed_manager)
         player.draw(screen, camera)
+
         npc_manager.draw(screen, camera)
 
         # UI 표시 (체력, 경험치, 돈, 인벤토리 등)

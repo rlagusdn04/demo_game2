@@ -242,12 +242,14 @@ class Player:
     def interact_with_npcs(self, keys, npc_manager):
         """NPC와 상호작용을 처리"""
         for npc in npc_manager.updated_npcs:
-            npc_rect = pygame.Rect(npc.x, npc.y, npc.width + 10, npc.height + 10)
+            npc_rect = pygame.Rect(npc.x - 5 , npc.y - 5, npc.width + 10, npc.height + 10) #충돌 판정보다 크게
             player_rect = pygame.Rect(self.x, self.y, self.size, self.size)
 
             if player_rect.colliderect(npc_rect):  # 충돌 감지
                 if keys[pygame.K_e]:  # 'E' 키를 눌렀을 때
-                    npc.interact()  # 해당 NPC와 상호작용
+                    npc.interact()  # 해당 NPC와 상호작용 호출
+                    break  # 한번만 상호작용 후 루프 종료
+
 
             
 
@@ -275,15 +277,18 @@ class Player:
 
     def add_experience(self, exp):
         self.experience += exp
-        if self.experience >= self.exp_MAX and self.level < 10:
+        if self.experience >= self.exp_MAX:
             self.add_level()
-            self.experience -= self.exp_MAX
+            self.experience = 0
+
 
     def add_level(self):
         self.level += 1
         self.state = "level_up"  # 상태 전환
         self.level_up_timer = 2000
         self.add_health(self.hp_MAX)
+
+        self.exp_MAX = self.level * 10
 
     def add_money(self, money):
         self.money += money

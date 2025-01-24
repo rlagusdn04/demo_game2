@@ -1,10 +1,10 @@
 {
     "player": {
         "map": 0,
-        "x": 110,
-        "y": 175,
-        "level": -100,
-        "experience": 10560,
+        "x": 405,
+        "y": 360,
+        "level": 11,
+        "experience": -10,
         "health": 100,
         "money": 0,
         "inventory": [
@@ -12,19 +12,19 @@
                 "id": 1,
                 "type": "seed",
                 "name": "Carrot Seed",
-                "quantity": 38
+                "quantity": 39
             },
             {
                 "id": 2,
                 "type": "seed",
                 "name": "Corn Seed",
-                "quantity": 34
+                "quantity": 35
             },
             {
                 "id": 3,
                 "type": "seed",
                 "name": "apple Seed",
-                "quantity": 46
+                "quantity": 48
             }
         ]
     },
@@ -35,7 +35,12 @@
             "type": "shop",
             "map": 0,
             "x": 150,
-            "y": 150
+            "y": 150,
+            "dialogue": [
+                "!!!",
+                "nice to meet you!",
+                "It's a nice day ;)"
+            ]
         }
     ]
 }
