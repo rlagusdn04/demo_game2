@@ -46,6 +46,9 @@ class Camera:
         if event.type == pygame.KEYDOWN and event.key == pygame.K_i:
             self.show_inventory = not self.show_inventory
 
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            self.show_inventory = False
+
     def draw_ui(self, player):
         health_text = self.font.render(f"Health: {player.health}", True, (0, 0, 0))
         exp_text = self.font.render(f"Experience: {player.experience}", True, (0, 0, 0))

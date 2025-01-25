@@ -43,6 +43,7 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
             camera.toggle_inventory(event)  # 인벤토리 토글
+            player.interact_with_npcs(event, npc_manager,camera)
 
 
         # 키보드와 마우스 입력 처리
@@ -50,7 +51,7 @@ def main():
         mouse_pos = pygame.mouse.get_pos()  # 마우스 위치
         mouse_pressed = pygame.mouse.get_pressed()  # 마우스 버튼 상태
 
-        player.move(keys, game_map, collision_manager, dt, npc_manager, camera, mouse_pressed)  # dt를 전달
+        player.move(keys, game_map, collision_manager, dt, npc_manager, camera, event)  # dt를 전달
 
         camera.update(player)
         npc_manager.update(game_map)
