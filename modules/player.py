@@ -150,7 +150,7 @@ class Player:
         }
         self.animator = Animation(self.animations[self.current_animation], 100)
 
-    def move(self, keys, game_map, collision_manager, dt, npc_manager):
+    def move(self, keys, game_map, collision_manager, dt, npc_manager,camera,mouse_pressed):
     
         current_map = game_map.get_current_map()
         map_width, map_height = current_map["size"]
@@ -160,27 +160,49 @@ class Player:
 
         new_x, new_y = self.x, self.y
 
-        
-        if keys[pygame.K_w]:
-            new_y -= self.speed
-            self.current_animation = "walk_up"
-            self.state = "moving"
-        if keys[pygame.K_s]:
-            new_y += self.speed
-            self.current_animation = "walk_down"
-            self.state = "moving"
-        if keys[pygame.K_a]:
-            new_x -= self.speed
-            self.current_animation = "walk_left"
-            self.state = "moving"
-        if keys[pygame.K_d]:
-            new_x += self.speed
-            self.current_animation = "walk_right"
-            self.state = "moving"
+            
+
+        if not self.state == "talking" and not self.state == "selling":
+            if keys[pygame.K_w]:
+                new_y -= self.speed
+                self.current_animation = "walk_up"
+                self.state = "moving"
+            if keys[pygame.K_s]:
+                new_y += self.speed
+                self.current_animation = "walk_down"
+                self.state = "moving"
+            if keys[pygame.K_a]:
+                new_x -= self.speed
+                self.current_animation = "walk_left"
+                self.state = "moving"
+            if keys[pygame.K_d]:
+                new_x += self.speed
+                self.current_animation = "walk_right"
+                self.state = "moving"
 
         if self.state == "idle":
             self.current_animation = "stand"
+            self.interaction = False
 
+            
+        if self.state == "talking":
+            for npc in npc_manager.updated_npcs:
+                npc_rect = pygame.Rect(npc.x - 5 , npc.y - 5, npc.width + 10, npc.height + 10) #충돌 판정보다 크게
+                player_rect = pygame.Rect(self.x, self.y, self.size, self.size)
+            if player_rect.colliderect(npc_rect):
+                npc.interact(self,camera)
+            
+
+        if self.state == "selling":
+            for npc in npc_manager.updated_npcs:
+                npc_rect = pygame.Rect(npc.x - 5 , npc.y - 5, npc.width + 10, npc.height + 10) #충돌 판정보다 크게
+                player_rect = pygame.Rect(self.x, self.y, self.size, self.size)
+            if player_rect.colliderect(npc_rect):
+                npc.sell(self,camera)
+            
+        
+        print(self.state)
+    
         if self.level_up_timer > 0:
             self.current_animation = "level_up"
             self.level_up_timer -= dt
@@ -218,7 +240,7 @@ class Player:
         self.pick(keys,items,collision_manager,player_rect,dt,game_map)
 
         # NPC 상호작용 호출
-        self.interact_with_npcs(keys, npc_manager)
+        self.interact_with_npcs(keys, npc_manager, camera)
 
     def pick(self,keys,items,collision_manager,player_rect,dt,game_map):
         collided_item = collision_manager.check_item_collision(player_rect, items)
@@ -239,20 +261,23 @@ class Player:
             else:
                 self.pick_up_timer = 0
 
-    def interact_with_npcs(self, keys, npc_manager):
+    def interact_with_npcs(self, keys, npc_manager,camera):
         """NPC와 상호작용을 처리"""
         for npc in npc_manager.updated_npcs:
             npc_rect = pygame.Rect(npc.x - 5 , npc.y - 5, npc.width + 10, npc.height + 10) #충돌 판정보다 크게
             player_rect = pygame.Rect(self.x, self.y, self.size, self.size)
 
             if player_rect.colliderect(npc_rect):  # 충돌 감지
-                if keys[pygame.K_e]:  # 'E' 키를 눌렀을 때
-                    npc.interact()  # 해당 NPC와 상호작용 호출
-                    break  # 한번만 상호작용 후 루프 종료
-
-
+                if keys[pygame.K_e] and npc.interaction == False:  # 'E' 키를 눌렀을 때
+                    npc.interact(self,camera)  # 해당 NPC와 상호작용 호출
+                    self.state = "talking"
+                    npc.interaction = True
+                    break
             
+            #한 번 대화 종료 후 다시 대화 가능할 때 까지 딜레이 먹이기
+        
 
+        
     def draw(self, screen, camera):
         # 현재 애니메이션 이미지 가져오기
         current_image = self.animator.get_current_image()

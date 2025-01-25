@@ -12,6 +12,8 @@ class Camera:
         self.font = pygame.font.SysFont(None, 24)  # Font 초기화
         self.color = (0, 0, 0)
         self.show_inventory = False  # 인벤토리 표시 상태
+        self.selected_item = None
+        self.select_check = False
 
     def update(self, player):
         # Calculate the target position for the camera
@@ -57,13 +59,12 @@ class Camera:
 
     def draw_inventory(self, player):
         if self.show_inventory:
-            # 배경 박스 설정
             padding = 10
-            box_width = 200
-            line_height = 20
+            box_width = 400
+            line_height = 40  # 라인 높이 늘리기
             inventory_height = len(player.inventory) * line_height + padding * 2
-            box_x = 10
-            box_y = 70
+            box_x = 400
+            box_y = 0
 
             # 배경 박스 그리기
             pygame.draw.rect(self.screen, (200, 200, 200), (box_x, box_y, box_width, inventory_height))
@@ -74,6 +75,17 @@ class Camera:
                 item_name = item["name"]
                 item_quantity = item["quantity"]
 
+                # 아이템 항목 영역 계산
+                item_rect = pygame.Rect(box_x + padding, box_y + padding + i * line_height, box_width - padding * 2, line_height)
+
+                # 호버 효과 (마우스가 항목 위에 있을 때)
+                if item_rect.collidepoint(pygame.mouse.get_pos()):
+                    pygame.draw.rect(self.screen, (230, 230, 230), item_rect)  # 호버 색상
+                    if pygame.mouse.get_pressed()[0] == 1:  # 클릭 시
+                        self.selected_item = item["id"]  # 선택된 아이템 인덱스 추적
+                        
+                
+
                 # 텍스트 렌더링
                 inventory_text = self.font.render(f"{item_name}: {item_quantity}", True, (0, 0, 0))
                 text_x = box_x + padding
@@ -82,6 +94,9 @@ class Camera:
                 # 텍스트 그리기
                 self.screen.blit(inventory_text, (text_x, text_y))
 
+                
+    def select_item(self):
+        return self.selected_item
 
 
 

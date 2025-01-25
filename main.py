@@ -50,7 +50,7 @@ def main():
         mouse_pos = pygame.mouse.get_pos()  # 마우스 위치
         mouse_pressed = pygame.mouse.get_pressed()  # 마우스 버튼 상태
 
-        player.move(keys, game_map, collision_manager, dt, npc_manager)  # dt를 전달
+        player.move(keys, game_map, collision_manager, dt, npc_manager, camera, mouse_pressed)  # dt를 전달
 
         camera.update(player)
         npc_manager.update(game_map)

@@ -14,7 +14,8 @@ class Map:
                     pygame.Rect(1200, 800, 200, 50),
                 ],
                 "transition_zones": [
-                    {"zone": pygame.Rect(1950, 950, 50, 100), "target_map": 1, "start_pos": (80, 725)}
+                    {"zone": pygame.Rect(1950, 950, 50, 100), "target_map": 1, "start_pos": (80, 725)},
+                    {"zone": pygame.Rect(950, 1950, 100, 50), "target_map": 2, "start_pos": (80, 80)}
                 ],
                 "map_index": 0,
                 "items": [] # 아이템 정보 추가
@@ -32,6 +33,19 @@ class Map:
                 "map_index": 1,
                 "items": [] # 아이템 정보 추가
             },
+            {
+                "type": "living map",
+                "size": (500, 500),
+                "obstacles": [
+                    pygame.Rect(800, 800, 50, 50)
+                ],
+                "transition_zones": [
+                    {"zone": pygame.Rect(0, 0, 100, 50), "target_map": 0, "start_pos": (1000, 1900)}
+                ],
+                "map_index": 2,
+                "items": [] # 아이템 정보 추가
+            },
+
         ]
         self.current_map_index = 0
 
@@ -79,7 +93,6 @@ class Map:
             )
             
 
-        
         seed_manager.update(current_map)
 
 
@@ -121,13 +134,12 @@ class SeedManager:
             if not any(transition_zone.collidepoint(seed_position) for transition_zone in transition_zones):
                 break
 
-        seed_id = random.choice([1, 2, 3])
+        seed_id = random.choice([1, 2, 3]) #확률 조정 
         seed_item = {
             "map_index": map_index,
             "position": seed_position,
             "type": "seed",
             "id": seed_id,
-
         }
 
         # Map 클래스에 씨앗 추가
