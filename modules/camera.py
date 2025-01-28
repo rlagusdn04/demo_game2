@@ -77,6 +77,7 @@ class Camera:
             for i, item in enumerate(player.inventory):
                 item_name = item["name"]
                 item_quantity = item["quantity"]
+                item_price = item["price"]
 
                 # 아이템 항목 영역 계산
                 item_rect = pygame.Rect(box_x + padding, box_y + padding + i * line_height, box_width - padding * 2, line_height)
@@ -84,10 +85,14 @@ class Camera:
                 # 호버 효과 (마우스가 항목 위에 있을 때)
                 if item_rect.collidepoint(pygame.mouse.get_pos()):
                     pygame.draw.rect(self.screen, (230, 230, 230), item_rect)  # 호버 색상
+                    price_text = self.font.render(f"${item_price}", True, (0, 0, 0)) 
+                    if player.state == "selling":
+                        price_x, price_y = pygame.mouse.get_pos()
+                        self.screen.blit(price_text,(price_x + 10,price_y - 10))
+
                     if pygame.mouse.get_pressed()[0] == 1:  # 클릭 시
                         self.selected_item = item["id"]  # 선택된 아이템 인덱스 추적
                         
-                
 
                 # 텍스트 렌더링
                 inventory_text = self.font.render(f"{item_name}: {item_quantity}", True, (0, 0, 0))

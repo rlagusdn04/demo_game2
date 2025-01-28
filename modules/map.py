@@ -2,6 +2,8 @@ import pygame
 import random
 import time
 
+seed_path = "data/seed.jpg"
+
 class Map:
     def __init__(self):
         self.maps = [
@@ -15,7 +17,7 @@ class Map:
                 ],
                 "transition_zones": [
                     {"zone": pygame.Rect(1950, 950, 50, 100), "target_map": 1, "start_pos": (80, 725)},
-                    {"zone": pygame.Rect(950, 1950, 100, 50), "target_map": 2, "start_pos": (80, 80)}
+                    {"zone": pygame.Rect(400, 490, 20, 10), "target_map": 2, "start_pos": (0, 450)}
                 ],
                 "map_index": 0,
                 "items": [] # 아이템 정보 추가
@@ -34,13 +36,14 @@ class Map:
                 "items": [] # 아이템 정보 추가
             },
             {
-                "type": "living map",
-                "size": (500, 500),
+                "type": "house map",
+                "size": (600, 600),
                 "obstacles": [
-                    pygame.Rect(800, 800, 50, 50)
+                    pygame.Rect(0, 500, 10000, 100),
+                    #pygame.Rect(500, 500, 100, 100)
                 ],
                 "transition_zones": [
-                    {"zone": pygame.Rect(0, 0, 100, 50), "target_map": 0, "start_pos": (1000, 1900)}
+                    {"zone": pygame.Rect(0, 500, 20, 10), "target_map": 0, "start_pos": (400, 530)}
                 ],
                 "map_index": 2,
                 "items": [] # 아이템 정보 추가
@@ -48,6 +51,7 @@ class Map:
 
         ]
         self.current_map_index = 0
+
 
     def get_current_map(self):
         return self.maps[self.current_map_index]
@@ -83,17 +87,19 @@ class Map:
                 (zone["zone"].x - camera.camera_x, zone["zone"].y - camera.camera_y, zone["zone"].width, zone["zone"].height)
             )
 
-         # Draw items
+          # Draw items with animation
         for item in current_map["items"]:
-            pygame.draw.circle(
-                screen,
-                (255, 255, 0),  # Yellow for seeds
-                (item["position"][0] - camera.camera_x, item["position"][1] - camera.camera_y),
-                5
-            )
-            
+            if item["type"] == "seed":
+                frame = seed_manager.seed_frames[seed_manager.frame_index]
+                screen.blit(
+                    frame,
+                    (item["position"][0] - camera.camera_x, item["position"][1] - camera.camera_y)
+                )
 
+
+            
         seed_manager.update(current_map)
+
 
 
 class SeedManager:
@@ -102,6 +108,11 @@ class SeedManager:
         self.spawn_interval = 5
         self.max_seeds = 5
         self.game_map = game_map
+        self.sheet = Item_Sheet(seed_path)
+        self.seed_frames = self.sheet.get_animation_frames(0, 0, 500, 500, 4)  # 프레임 4개 가져오기
+        self.frame_index = 0
+        self.animation_timer = time.time()
+        self.animation_interval = 0.2  # 프레임 전환 속도
 
     def update(self, current_map):
         # 씨앗 생성
@@ -115,6 +126,11 @@ class SeedManager:
                     self.spawn_seed(current_map)
                     self.global_timer = current_time
 
+        # 애니메이션 프레임 업데이트
+        if time.time() - self.animation_timer >= self.animation_interval:
+            self.frame_index = (self.frame_index + 1) % len(self.seed_frames)
+            self.animation_timer = time.time()
+
     def spawn_seed(self, current_map):
         map_index = current_map["map_index"]
         map_size = current_map["size"]
@@ -126,15 +142,18 @@ class SeedManager:
                 random.randint(0, map_size[0]),
                 random.randint(0, map_size[1]),
             )
+
             # 장애물과 충돌 확인
-            if not any(obstacle.collidepoint(seed_position) for obstacle in obstacles):
-                break
+            if any(obstacle.collidepoint(seed_position) for obstacle in obstacles):
+                continue  # 충돌 발생 시 새로운 위치를 찾음
 
-            # trans zone과 충돌 확인
-            if not any(transition_zone.collidepoint(seed_position) for transition_zone in transition_zones):
-                break
+            # 전환 구역과 충돌 확인
+            if any(zone["zone"].collidepoint(seed_position) for zone in transition_zones):
+                continue 
 
-        seed_id = random.choice([1, 2, 3]) #확률 조정 
+            break
+
+        seed_id = random.choices([0, 1, 2], weights=[0.6, 0.3, 0.1])[0] # 확률 조정
         seed_item = {
             "map_index": map_index,
             "position": seed_position,
@@ -148,7 +167,7 @@ class SeedManager:
 
 
 class Item_Sheet:
-    def __init__(self, file_path, scale_factor=0.5):
+    def __init__(self, file_path, scale_factor=0.05):
         self.sheet = pygame.image.load(file_path)
         self.scale_factor = scale_factor
 
@@ -162,3 +181,12 @@ class Item_Sheet:
             new_height = int(height * self.scale_factor)
             image = pygame.transform.scale(image, (new_width, new_height))
         return image
+
+    def get_animation_frames(self, start_x, start_y, frame_width, frame_height, num_frames):
+        frames = []
+        for i in range(num_frames):
+            frame_x = start_x + i * frame_width
+            frame_y = start_y
+            frames.append(self.get_image(frame_x, frame_y, frame_width, frame_height))
+        return frames
+

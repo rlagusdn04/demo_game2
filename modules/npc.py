@@ -1,7 +1,7 @@
 import pygame
 import time
 
-npc1_path = "Leah.png"
+npc1_path = "data/Leah.png"
 
 class NPC:
     def __init__(self, id, name, type, map_index, x, y, dialogue):
@@ -36,7 +36,6 @@ class NPC:
             print(player.state)
         else:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_e and player.state == "talking":  # 'E' 키를 눌렀을 때
-                print(self.current_dialogue_index, len(self.dialogue))
                 if self.current_dialogue_index < len(self.dialogue) - 1:  # 인덱스가 범위를 초과하지 않을 때만
                     self.current_dialogue_index += 1  # 대사 전환
                 else:  # 마지막 대사일 경우 대화 종료
@@ -52,9 +51,9 @@ class NPC:
                     self.sell(player, camera, event)
 
     def sell(self, player, camera, event):
-        items = [0, 1]  # 판매 가능한 품목 ID 리스트
+        items = [0, 1, 2]  # 판매 가능한 품목 ID 리스트
         player.state = "selling"
-        print(player.state)
+   
         if self.sell_check:  # 거래 가능 상태인지 확인
             camera.show_inventory = True
 
@@ -62,12 +61,11 @@ class NPC:
                 self.sell_check = False  # 거래 상태 종료
                 camera.show_inventory = False
                 player.state = "talking"  # 다시 대화 상태로 전환
-                print("talking")
                 self.current_dialogue_index += 1
                 return
 
             selected_item_id = camera.select_item()  # 선택된 아이템의 ID를 반환
-            print(selected_item_id)
+    
             if selected_item_id is not None:  # 선택된 아이템이 있는 경우
                 selected_item = next((item for item in player.inventory if item["id"] == selected_item_id), None)
                 
@@ -78,15 +76,14 @@ class NPC:
                             player.money += sell_price  # 플레이어 돈 증가
                             selected_item["quantity"] -= 1  # 아이템 개수 감소
 
-                            
-
+                    
 
 
     def draw(self, screen, camera):
         draw_x = self.x - camera.camera_x
         draw_y = self.y - camera.camera_y
 
-        pygame.draw.rect(screen, (0, 255, 0), (draw_x, draw_y, self.width, self.height))
+        #pygame.draw.rect(screen, (0, 255, 0), (draw_x, draw_y, self.width, self.height))
         screen.blit(self.image, (draw_x, draw_y - 30))
 
         if self.show_dialogue:

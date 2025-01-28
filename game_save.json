@@ -1,18 +1,18 @@
 {
     "player": {
         "map": 0,
-        "x": 350,
-        "y": 265,
-        "level": 4,
-        "experience": 40,
+        "x": 525,
+        "y": 620,
+        "level": 7,
+        "experience": 0,
         "health": 100,
-        "money": 129500,
+        "money": 4410,
         "inventory": [
             {
                 "id": 0,
                 "type": "seed",
                 "name": "Corn Seed",
-                "quantity": 110060,
+                "quantity": 11,
                 "price": 100
             },
             {
@@ -26,7 +26,7 @@
                 "id": 2,
                 "type": "seed",
                 "name": "carrot Seed",
-                "quantity": 57,
+                "quantity": 48,
                 "price": 50
             }
         ]
@@ -36,7 +36,7 @@
             "id": 0,
             "name": "Leah",
             "type": "shop",
-            "map": 0,
+            "map": 2,
             "x": 150,
             "y": 150,
             "dialogue": [

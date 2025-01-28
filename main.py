@@ -23,7 +23,7 @@ def main():
     running = True
 
     # 스프라이트 시트 로드
-    sprite_sheet = SpriteSheet("ditto.png")
+    sprite_sheet = SpriteSheet("data/ditto.png")
 
     # 객체 생성
     player = Player(100, 100, 40, 5, sprite_sheet)
