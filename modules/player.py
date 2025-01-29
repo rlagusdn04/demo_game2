@@ -32,35 +32,44 @@ class Animation:
     def get_current_image(self):
         return self.images[self.current_frame]
 
+import pygame
+
 class CollisionManager:
     def __init__(self, game_map):
         self.game_map = game_map
 
     def check_obstacle_collision(self, player_rect, obstacles):
+        """플레이어와 장애물 충돌 판정"""
         for obstacle in obstacles:
-            if player_rect.colliderect(obstacle):
-                return True
-        return False
+            # 장애물의 위치와 크기를 이용하여 pygame.Rect 객체 생성
+            obstacle_rect = pygame.Rect(obstacle["x"], obstacle["y"], obstacle["width"], obstacle["height"])
+            if player_rect.colliderect(obstacle_rect):
+                return True  # 충돌 발생
+        return False  # 충돌 없음
 
     def check_item_collision(self, player_rect, items):
         """플레이어와 충돌한 아이템 반환"""
         for item in items:
-            item_width = 40  # 기본 아이템 크기
+            item_width = 40  # 기본 아이템 크기 (40x40 크기 아이템 가정)
             item_rect = pygame.Rect(
-                item["position"][0] - 20,  
-                item["position"][1],               
-                item_width + 20,        
-                item_width                
+                item["position"][0] - 20,  # 아이템의 x 좌표
+                item["position"][1],        # 아이템의 y 좌표
+                item_width + 20,            # 아이템의 너비
+                item_width                  # 아이템의 높이
             )
             if player_rect.colliderect(item_rect):
-                return item
-        return None
+                return item  # 충돌한 아이템 반환
+        return None  # 충돌한 아이템 없음
 
     def check_transition_zone(self, player_rect, transition_zones):
+        """플레이어가 전환 존에 진입했는지 확인"""
         for zone in transition_zones:
-            if player_rect.colliderect(zone["zone"]):
-                return zone
-        return None
+            # 전환 존의 영역을 나타내는 사각형과 충돌 검사
+            zone_rect = pygame.Rect(zone["zone"]["x"], zone["zone"]["y"], zone["zone"]["width"], zone["zone"]["height"])
+            if player_rect.colliderect(zone_rect):
+                return zone  # 충돌한 전환 존 반환
+        return None  # 전환 존과 충돌 없음
+
     
     def check_npc_collision(self, player_rect, npcs):
         for npc in npcs:
@@ -180,6 +189,7 @@ class Player:
                 self.current_animation = "walk_right"
                 self.state = "moving"
 
+
         if self.state == "idle":
             self.current_animation = "stand"
             self.interaction = False
@@ -241,6 +251,12 @@ class Player:
                     self.pick_up_timer = 0
             else:
                 self.pick_up_timer = 0
+    
+    def plant(self,event,game_map):
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_e:  # E키를 누르면 씨앗 심기
+                if self.inventory[0]["quantity"] > 0:
+                    if game_map.plant_seed(self, self.x, self.y,game_map):
+                        self.current_animation = "pick_up_right"
 
     def interact_with_npcs(self, event, npc_manager,camera):
         """NPC와 상호작용을 처리"""

@@ -44,6 +44,7 @@ def main():
                 running = False
             camera.toggle_inventory(event)  # 인벤토리 토글
             player.interact_with_npcs(event, npc_manager,camera)
+            player.plant(event,game_map)
 
 
         # 키보드와 마우스 입력 처리
@@ -70,6 +71,7 @@ def main():
 
     # 게임 종료 시 자동 저장
     SaveLoad.save_game(player, game_map, npc_manager)
+    game_map.save_maps()
     pygame.quit()
 
 if __name__ == "__main__":

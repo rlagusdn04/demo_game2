@@ -1,6 +1,8 @@
 import json
 from modules.npc import NPC
 
+map_data = "game_map.json"
+
 class SaveLoad:
     @staticmethod
     def save_game(player, map, npc_manager, file_path="game_save.json"):
@@ -32,6 +34,13 @@ class SaveLoad:
         with open(file_path, "w", encoding="utf-8") as file: 
             json.dump(data, file, indent=4)
         print("게임과 NPC 정보가 저장되었습니다!")
+
+    # def save_map(map, file_path=map_data):
+    #     print(map.maps[0])
+    #     data = {"maps": map.maps}
+    #     with open(file_path, "w", encoding="utf-8") as file:
+    #         json.dump(map.maps, file, indent=4)
+    #     print("맵 정보가 저장되었습니다!")
 
     @staticmethod
     def load_game(player, map, npc_manager, file_path="game_save.json"):
