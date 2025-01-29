@@ -56,6 +56,7 @@ def main():
         camera.update(player)
         npc_manager.update(game_map)
 
+        screen.fill((0, 0, 0))
         game_map.draw(screen, camera, seed_manager)
         player.draw(screen, camera)
 
