@@ -103,8 +103,21 @@ class Camera:
                 self.screen.blit(inventory_text, (text_x, text_y))
 
                 
-    def select_item(self):
-        return self.selected_item
+    def handUI(self, screen):
+        """플레이어가 손에 든 아이템을 화면 중앙 하단에 표시"""
+        if self.player.hand:  # 손에 아이템이 있는 경우
+            # UI 박스 배경 그리기
+            box_x = (screen.get_width() - self.width) // 2  # 화면 중앙
+            box_y = screen.get_height() - self.height - 20  # 화면 하단
+            pygame.draw.rect(screen, (200, 200, 200), (box_x, box_y, self.width, self.height))  # 배경
+            pygame.draw.rect(screen, (0, 0, 0), (box_x, box_y, self.width, self.height), 2)  # 테두리
+
+            # 아이템 ID 텍스트 렌더링
+            item_id = self.player.hand["id"]
+            text_surface = self.font.render(f"Item: {item_id}", True, (0, 0, 0))  # 아이템 ID 표시
+            text_x = box_x + (self.width - text_surface.get_width()) // 2  # 텍스트 중앙 정렬
+            text_y = box_y + (self.height - text_surface.get_height()) // 2
+            screen.blit(text_surface, (text_x, text_y))
 
 
 

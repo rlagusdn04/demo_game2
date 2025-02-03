@@ -93,6 +93,7 @@ class Player:
         self.inventory = []
         self.color = (0, 255, 0)
         self.current_animation = "stand"
+        self.hand = None  # 손에 든 아이템
 
         # 상태 관리 초기화
         self.state = "idle"  # "idle", "moving", "picking_up"
@@ -294,6 +295,9 @@ class Player:
         # surface = pygame.Surface((pick_up_rect.width, pick_up_rect.height), pygame.SRCALPHA)
         # surface.fill((0, 255, 0, 100))  # RGBA 형식으로 알파값(투명도) 설정
         # screen.blit(surface, (pick_up_rect.x, pick_up_rect.y))
+
+    def hand(self, item):
+        self.hand = item
 
     def set_position(self, x, y):
         self.x = x

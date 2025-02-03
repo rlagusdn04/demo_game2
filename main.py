@@ -42,6 +42,9 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_e:  # 'E' 키를 눌러 작물 수확
+                    game_map.harvest_crop(player, player.x, player.y)
             camera.toggle_inventory(event)  # 인벤토리 토글
             player.interact_with_npcs(event, npc_manager,camera)
             player.plant(event,game_map)
@@ -56,6 +59,7 @@ def main():
 
         camera.update(player)
         npc_manager.update(game_map)
+        game_map.update_crop(dt)
 
         screen.fill((0, 0, 0))
         game_map.draw(screen, camera, seed_manager)

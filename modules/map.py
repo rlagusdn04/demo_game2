@@ -14,6 +14,10 @@ class Tile:
         self.tile_size = tile_size
         self.walkable = tile_type not in ['water']  # 장애물 판정 (water는 걸을 수 없음)
         self.rect = pygame.Rect(x, y, tile_size, tile_size)  # 충돌 판정을 위한 rect 생성
+        self.planted_time = 0  # 작물이 심어진 시간
+        self.growth_stage = 0  # 작물의 성장 단계 (0: 심어진 직후, 1: 성장 중, 2: 완전히 성장)
+        self.crop_type = 1 # 작물의 종류 (예: "carrot", "potato", 등)
+        print("타일 생성")
 
     def draw(self, screen, tile_size, camera_x, camera_y):
         """타일을 화면에 그리기"""
@@ -31,6 +35,37 @@ class Tile:
             (self.x - camera_x, self.y - camera_y, tile_size, tile_size)
         )
 
+        # 작물이 심어진 경우 성장 상태에 따라 작물을 그림
+        if self.tile_type == 'planted soil' and self.crop_type:
+            crop_color = (0, 255, 0) if self.growth_stage == 2 else (255, 165, 0)  # 완전히 성장하면 초록색, 아니면 주황색
+            pygame.draw.circle(
+                screen,
+                crop_color,
+                (self.x - camera_x + tile_size // 2, self.y - camera_y + tile_size // 2),
+                tile_size // 4
+            )
+
+    def update_growth(self, dt):
+        """작물의 성장 상태를 업데이트"""
+        
+        if self.tile_type == 'planted soil' and self.crop_type:
+            self.planted_time += dt  # 경과 시간 누적
+            print(self.planted_time)
+            if self.planted_time >= 10000:  # 10초 후에 완전히 성장
+                self.growth_stage = 2
+            elif self.planted_time >= 5000:  # 5초 후에 성장 중
+                self.growth_stage = 1
+                
+    def harvest(self):
+        """작물을 수확하고 타일을 흙으로 되돌림"""
+        if self.tile_type == 'planted soil' and self.growth_stage == 2:
+            self.tile_type = 'soil'
+            self.planted_time = 0
+            self.growth_stage = 0
+            self.crop_type = None
+            return True
+        return False
+    
     def update_position(self, new_x, new_y):
         """타일의 위치를 업데이트"""
         self.x = new_x
@@ -111,6 +146,7 @@ class Map:
         self.maps = []
         self.current_map_index = 0
         self.tile_size = 50  # 타일 크기
+        self.tile_map = None
 
         # JSON 파일에서 맵 데이터를 로드하거나 초기화
         self.load_maps()
@@ -125,6 +161,12 @@ class Map:
             print("맵 데이터 파일이 없으므로 새로 생성합니다.")
             self.initialize_maps()
             self.save_maps()
+        
+        current_map = self.get_current_map()
+        # 현재 맵의 타일맵 생성
+        if current_map["tilemap"]:
+            self.tile_map = TileMap(len(current_map["tilemap"][0]), len(current_map["tilemap"]))
+            self.tile_map.generate(current_map["tilemap"])  # 타일 생성
 
     def initialize_maps(self):
         # 맵 초기화 (기본 맵 데이터 정의)
@@ -187,11 +229,8 @@ class Map:
         current_map = self.get_current_map()
 
         # 타일맵 그리기 (타일맵이 TileMap 인스턴스여야 함)
-        if current_map["tilemap"]:
-            # TileMap 객체로 초기화되어야 함
-            tile_map = TileMap(len(current_map["tilemap"][0]), len(current_map["tilemap"]))
-            tile_map.generate(current_map["tilemap"])  # 타일 생성
-            tile_map.draw(screen, camera.camera_x, camera.camera_y)  # 타일 그리기
+        if self.tile_map:
+            self.tile_map.draw(screen, camera.camera_x, camera.camera_y)  # 타일 그리기
 
         # 장애물 그리기
         for obstacle in current_map["obstacles"]:
@@ -220,32 +259,51 @@ class Map:
 
         seed_manager.update(current_map)
 
-    def plant_seed(self, player, x, y,game_map):
+    def plant_seed(self, player, x, y, game_map):
         """현재 위치(x, y)에 씨앗을 심는 함수"""
         tile_x = (x + 20) // self.tile_size  # 타일 인덱스 변환
         tile_y = (y + 20) // self.tile_size
 
-        # TileMap 객체에서 타일을 확인
-        current_map = self.get_current_map()
-        tile_map = TileMap(len(current_map["tilemap"][0]), len(current_map["tilemap"]))
-        tile_map.generate(current_map["tilemap"])
+        if self.tile_map:
+            for tile in self.tile_map.tiles:  # 타일 리스트에서 직접 확인
+                if tile.x // self.tile_size == tile_x and tile.y // self.tile_size == tile_y:
+                    if tile.tile_type == "soil":  # 흙이면 씨앗 심기 가능
+                        tile.tile_type = "planted soil"  # 씨앗 심음
+                        tile.crop_type = player.inventory[0]["id"]  # 작물 종류 설정
+                        tile.planted_time = 0  # 심은 시간 초기화
 
-        for tile in tile_map.tiles:  # 타일 리스트에서 직접 확인
-            if tile.x // self.tile_size == tile_x and tile.y // self.tile_size == tile_y:
-                if tile.tile_type == "soil":  # 흙이면 씨앗 심기 가능
-                    tile.tile_type = "planted_seed"  # 씨앗 심음
-                    tile_map.update_tile_type(tile.x, tile.y, "planted soil", current_map["tilemap"],game_map)  # 타일맵 데이터 업데이트
-
-                    # 플레이어의 인벤토리에서 씨앗 개수 감소
-                    player.inventory[0]["quantity"] -= 1
-                    return True
-                else:
-                    print("흙이 아닙니다.")
-                    return False
+                        # 플레이어의 인벤토리에서 씨앗 개수 감소
+                        player.inventory[0]["quantity"] -= 1
+                        return True
+                    else:
+                        print("흙이 아닙니다.")
+                        return False
 
         print("해당 위치에 타일이 없습니다.")
         return False
+    
+    def update_crop(self, dt):
+        """맵의 모든 타일을 업데이트하여 작물의 성장 상태를 확인"""
+        if self.tile_map:
+            for tile in self.tile_map.tiles:
+                tile.update_growth(dt)  # dt를 전달하여 작물 성장 업데이트
+    def harvest_crop(self, player, x, y):
+        """플레이어가 특정 위치에서 작물을 수확"""
+        tile_x = (x + 20) // self.tile_size  # 타일 인덱스 변환
+        tile_y = (y + 20) // self.tile_size
 
+        if self.tile_map:
+            for tile in self.tile_map.tiles:
+                if tile.x // self.tile_size == tile_x and tile.y // self.tile_size == tile_y:
+                    if tile.harvest():
+                        player.add_item({"type": "crop", "id": 3})  # 플레이어 인벤토리에 작물 추가
+                        return True
+                    else:
+                        print("수확할 작물이 없습니다.")
+                        return False
+
+        print("해당 위치에 타일이 없습니다.")
+        return False
 
 
 class SeedManager:

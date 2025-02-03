@@ -1,8 +1,8 @@
 {
     "player": {
         "map": 0,
-        "x": 50,
-        "y": 190,
+        "x": 280,
+        "y": 195,
         "level": 9,
         "experience": 10,
         "health": 100,
@@ -12,7 +12,7 @@
                 "id": 0,
                 "type": "seed",
                 "name": "Corn Seed",
-                "quantity": 99930,
+                "quantity": 99915,
                 "price": 100
             },
             {
