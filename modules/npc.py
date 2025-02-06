@@ -51,7 +51,7 @@ class NPC:
                     self.sell(player, camera, event)
 
     def sell(self, player, camera, event):
-        items = [0, 1, 2]  # 판매 가능한 품목 ID 리스트
+        items = [3]  # 판매 가능한 품목 ID 리스트
         player.state = "selling"
    
         if self.sell_check:  # 거래 가능 상태인지 확인

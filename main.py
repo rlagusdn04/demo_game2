@@ -43,11 +43,13 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_e:  # 'E' 키를 눌러 작물 수확
+                if event.key == pygame.K_e:  # 'E' 키를 눌러 작물 수확 및 상호작용
+                    player.plant(event, game_map) # 작물 심기
                     game_map.harvest_crop(player, player.x, player.y)
+                    #player.use_hand_item(event,game_map)
+                    player.use_item(event)
             camera.toggle_inventory(event)  # 인벤토리 토글
             player.interact_with_npcs(event, npc_manager,camera)
-            player.plant(event,game_map)
 
 
         # 키보드와 마우스 입력 처리

@@ -101,6 +101,9 @@ class Camera:
 
                 # 텍스트 그리기
                 self.screen.blit(inventory_text, (text_x, text_y))
+                
+    def select_item(self):
+        return self.selected_item
 
                 
     def handUI(self, screen):

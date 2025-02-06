@@ -256,8 +256,13 @@ class Player:
     def plant(self,event,game_map):
         if event.type == pygame.KEYDOWN and event.key == pygame.K_e:  # E키를 누르면 씨앗 심기
                 if self.inventory[0]["quantity"] > 0:
-                    if game_map.plant_seed(self, self.x, self.y,game_map):
+                    if game_map.plant_seed(self, self.x, self.y):
+                        self.inventory[0]["quantity"] -= 1
                         self.current_animation = "pick_up_right"
+
+    def use_item(self,event):
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_e:
+            self.hand = self.inventory[0]
 
     def interact_with_npcs(self, event, npc_manager,camera):
         """NPC와 상호작용을 처리"""
@@ -331,6 +336,7 @@ class Player:
         item_id = item.get("id")
         if item_type == "seed":
             self.add_experience(10)
+            game_map.remove_item(item)
 
         add_check = False
 
@@ -347,5 +353,3 @@ class Player:
                 "type": item_type,
                 "quantity": 1
             })
-
-        game_map.remove_item(item)

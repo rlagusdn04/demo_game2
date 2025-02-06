@@ -157,6 +157,39 @@
             ],
             "map_index": 1,
             "items": []
+        },
+        {
+            "type": "shop map",
+            "size": [
+                600,
+                600
+            ],
+            "tilemap": [],
+            "obstacles": [
+                {
+                    "x": 0,
+                    "y": 500,
+                    "width": 800,
+                    "height": 100
+                }
+            ],
+            "transition_zones": [
+                {
+                    "zone": {
+                        "x": 0,
+                        "y": 500,
+                        "width": 10,
+                        "height": 10
+                    },
+                    "target_map": 0,
+                    "start_pos": [
+                        400,
+                        530
+                    ]
+                }
+            ],
+            "map_index": 2,
+            "items": []
         }
     ]
 }

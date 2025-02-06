@@ -26,7 +26,7 @@ class Tile:
             'stone': (169, 169, 169),  # 돌
             'water': (0, 0, 255),  # 물
             'soil': (139, 69, 19),  # 흙
-            'planted soil': (255, 255, 0),  # 심은 흙
+            'planted soil': (139, 69, 19),  # 심은 흙
         }
         color = types.get(self.tile_type, (255, 255, 255))  # 기본은 흰색
         pygame.draw.rect(
@@ -50,7 +50,6 @@ class Tile:
         
         if self.tile_type == 'planted soil' and self.crop_type:
             self.planted_time += dt  # 경과 시간 누적
-            print(self.planted_time)
             if self.planted_time >= 10000:  # 10초 후에 완전히 성장
                 self.growth_stage = 2
             elif self.planted_time >= 5000:  # 5초 후에 성장 중
@@ -207,10 +206,33 @@ class Map:
 
     def save_maps(self):
         # 맵 데이터를 JSON 파일로 저장
+        self. sync_tilemap_data()
         data = {"maps": self.maps}
         with open(self.json_file, 'w') as file:
             json.dump(data, file, indent=4)
         print("맵 데이터 저장 완료")
+
+    def sync_tilemap_data(self):
+        """TileMap의 타일 객체 상태를 현재 맵 데이터(tilemap)에 반영합니다."""
+        current_map = self.get_current_map()
+
+        # 타일맵 배열의 행(row)과 열(col)의 길이를 구함 (기본적으로 2차원 리스트라고 가정)
+        num_rows = len(current_map["tilemap"])
+        num_cols = len(current_map["tilemap"][0]) if num_rows > 0 else 0
+
+        # TileMap이 존재하는지 확인
+        if self.tile_map is None:
+            return
+
+        # 각 타일 객체에 대해 해당하는 인덱스에 tile_type을 업데이트
+        for tile in self.tile_map.tiles:
+            col_idx = tile.x // self.tile_map.tile_size
+            row_idx = tile.y // self.tile_map.tile_size
+
+            # 인덱스가 유효한지 확인
+            if 0 <= row_idx < num_rows and 0 <= col_idx < num_cols:
+                current_map["tilemap"][row_idx][col_idx] = tile.tile_type
+
 
     def get_current_map(self):
         return self.maps[self.current_map_index]
@@ -259,21 +281,22 @@ class Map:
 
         seed_manager.update(current_map)
 
-    def plant_seed(self, player, x, y, game_map):
+    def plant_seed(self, player, x, y):
         """현재 위치(x, y)에 씨앗을 심는 함수"""
         tile_x = (x + 20) // self.tile_size  # 타일 인덱스 변환
         tile_y = (y + 20) // self.tile_size
+
 
         if self.tile_map:
             for tile in self.tile_map.tiles:  # 타일 리스트에서 직접 확인
                 if tile.x // self.tile_size == tile_x and tile.y // self.tile_size == tile_y:
                     if tile.tile_type == "soil":  # 흙이면 씨앗 심기 가능
                         tile.tile_type = "planted soil"  # 씨앗 심음
-                        tile.crop_type = player.inventory[0]["id"]  # 작물 종류 설정
+                        tile.crop_type = player.inventory[0]["name"]  # 작물 종류 설정
                         tile.planted_time = 0  # 심은 시간 초기화
-
-                        # 플레이어의 인벤토리에서 씨앗 개수 감소
-                        player.inventory[0]["quantity"] -= 1
+                        tile.growth_stage = 0
+                       
+                    
                         return True
                     else:
                         print("흙이 아닙니다.")
@@ -287,6 +310,7 @@ class Map:
         if self.tile_map:
             for tile in self.tile_map.tiles:
                 tile.update_growth(dt)  # dt를 전달하여 작물 성장 업데이트
+                
     def harvest_crop(self, player, x, y):
         """플레이어가 특정 위치에서 작물을 수확"""
         tile_x = (x + 20) // self.tile_size  # 타일 인덱스 변환
@@ -296,7 +320,7 @@ class Map:
             for tile in self.tile_map.tiles:
                 if tile.x // self.tile_size == tile_x and tile.y // self.tile_size == tile_y:
                     if tile.harvest():
-                        player.add_item({"type": "crop", "id": 3})  # 플레이어 인벤토리에 작물 추가
+                        player.add_item({"type": "crop", "id": 3},self)  # 플레이어 인벤토리에 작물 추가
                         return True
                     else:
                         print("수확할 작물이 없습니다.")
