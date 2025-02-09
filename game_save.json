@@ -1,18 +1,18 @@
 {
     "player": {
-        "map": 0,
-        "x": 240,
-        "y": 380,
+        "map": 2,
+        "x": 0,
+        "y": 320,
         "level": 9,
-        "experience": 10,
+        "experience": 30,
         "health": 100,
-        "money": 7710,
+        "money": 10210,
         "inventory": [
             {
                 "id": 0,
                 "type": "seed",
                 "name": "Corn Seed",
-                "quantity": 71,
+                "quantity": 54,
                 "price": 100
             },
             {
@@ -33,7 +33,7 @@
                 "id": 3,
                 "type": "crop",
                 "name": "corn",
-                "quantity": 18,
+                "quantity": 27,
                 "price": 500
             }
         ]

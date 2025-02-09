@@ -42,23 +42,23 @@
                 ],
                 [
                     "grass",
-                    "soil",
                     "planted soil",
                     "planted soil",
                     "planted soil",
-                    "soil",
-                    "soil",
+                    "planted soil",
+                    "planted soil",
+                    "planted soil",
                     "grass",
                     "grass"
                 ],
                 [
                     "grass",
-                    "soil",
-                    "soil",
                     "planted soil",
                     "soil",
                     "soil",
                     "soil",
+                    "planted soil",
+                    "planted soil",
                     "grass",
                     "grass"
                 ],
@@ -156,7 +156,53 @@
                 }
             ],
             "map_index": 1,
-            "items": []
+            "items": [
+                {
+                    "map_index": 1,
+                    "position": [
+                        58,
+                        869
+                    ],
+                    "type": "seed",
+                    "id": 0
+                },
+                {
+                    "map_index": 1,
+                    "position": [
+                        251,
+                        225
+                    ],
+                    "type": "seed",
+                    "id": 0
+                },
+                {
+                    "map_index": 1,
+                    "position": [
+                        368,
+                        234
+                    ],
+                    "type": "seed",
+                    "id": 0
+                },
+                {
+                    "map_index": 1,
+                    "position": [
+                        77,
+                        999
+                    ],
+                    "type": "seed",
+                    "id": 1
+                },
+                {
+                    "map_index": 1,
+                    "position": [
+                        114,
+                        677
+                    ],
+                    "type": "seed",
+                    "id": 1
+                }
+            ]
         },
         {
             "type": "shop map",
@@ -178,7 +224,7 @@
                     "zone": {
                         "x": 0,
                         "y": 500,
-                        "width": 10,
+                        "width": 20,
                         "height": 10
                     },
                     "target_map": 0,
