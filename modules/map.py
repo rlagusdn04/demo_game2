@@ -3,7 +3,7 @@ import random
 import json
 
 seed_path = "data/ditto.png"
-shop_path = "data/shop.jpg"
+shop_path = "data/shop.png"
 
 ####################################
 # 타일 클래스
@@ -14,12 +14,11 @@ class Tile:
         self.y = y
         self.tile_type = tile_type
         self.tile_size = tile_size
-        self.walkable = tile_type not in ['water']  # 장애물 판정 (water는 걸을 수 없음)
-        self.rect = pygame.Rect(x, y, tile_size, tile_size)  # 충돌 판정을 위한 rect 생성
-        self.planted_time = 0  # 작물이 심어진 시간
-        self.growth_stage = 0  # 작물의 성장 단계 (0: 심어진 직후, 1: 성장 중, 2: 완전히 성장)
-        self.crop_type = 1     # 작물의 종류 (예: "carrot", "potato", 등)
-        print("타일 생성")
+        self.walkable = tile_type not in ['water']
+        self.rect = pygame.Rect(x, y, tile_size, tile_size)
+        self.planted_time = pygame.time.get_ticks() if tile_type == "planted soil" else None
+        self.growth_stage = 0
+        self.crop_type = 1 if tile_type == "planted soil" else None
 
     def draw(self, screen, tile_size, camera_x, camera_y):
         types = {
@@ -46,20 +45,21 @@ class Tile:
                 tile_size // 4
             )
 
-    def update_growth(self, dt):
-        if self.tile_type == 'planted soil' and self.crop_type:
-            self.planted_time += dt
-            if self.planted_time >= 10000:
-                self.growth_stage = 2
-            elif self.planted_time >= 5000:
-                self.growth_stage = 1
+    def update_growth(self, current_game_time):
+        """절대 시간 기반으로 성장 단계 업데이트"""
+        if self.tile_type == 'planted soil' and self.crop_type and self.planted_time is not None:
+            elapsed = current_game_time - self.planted_time
+            if elapsed >= 10000:  # 10초 이상 경과 시
+                self.growth_stage = 2  # 완전히 성장
+            elif elapsed >= 5000:  # 5초 이상 경과 시
+                self.growth_stage = 1  # 중간 성장 단계
 
     def harvest(self):
         if self.tile_type == 'planted soil' and self.growth_stage == 2:
             self.tile_type = 'soil'
-            self.planted_time = 0
+            self.planted_time = None
             self.growth_stage = 0
-            self.crop_type = None
+            self.crop_type = 1
             return True
         return False
     
@@ -80,6 +80,8 @@ class TileMap:
         self.obstacles = []
 
     def generate(self, data):
+        self.tiles = []     # 이전 타일 초기화
+        self.obstacles = [] # 이전 장애물 초기화
         for row_idx, row in enumerate(data):
             for col_idx, tile_type in enumerate(row):
                 x = col_idx * self.tile_size
@@ -124,7 +126,7 @@ class Map:
         self.maps = []
         self.current_map_index = 0
         self.tile_size = 50
-        self.tile_map = None
+        self.tilemaps = {}  # 모든 맵의 TileMap 저장
         self.background_images = {}  # 캐싱용
         self.load_maps()
 
@@ -139,10 +141,17 @@ class Map:
             self.initialize_maps()
             self.save_maps()
 
-        current_map = self.get_current_map()
-        if current_map["tilemap"]:
-            self.tile_map = TileMap(len(current_map["tilemap"][0]), len(current_map["tilemap"]))
-            self.tile_map.generate(current_map["tilemap"])
+        # 모든 맵에 대해 TileMap 객체 생성 후 저장
+        for m in self.maps:
+            map_index = m["map_index"]
+            if m["tilemap"]:
+                tilemap_obj = TileMap(len(m["tilemap"][0]), len(m["tilemap"]), self.tile_size)
+                tilemap_obj.generate(m["tilemap"])
+                self.tilemaps[map_index] = tilemap_obj
+            else:
+                self.tilemaps[map_index] = None
+
+        self.tile_map = self.tilemaps[self.current_map_index]
 
     def initialize_maps(self):
         # 예시로 세 개의 맵 데이터를 정의합니다.
@@ -154,14 +163,14 @@ class Map:
             ["grass", "planted soil", "soil", "soil", "soil", "planted soil", "planted soil", "grass", "grass"],
             ["grass"] * 9
         ]
-        map1_data = []  # seed map은 tilemap 없이 배경 없이 관리 (아이템 중심)
-        map2_data = []  # shop map도 tilemap 없이 단순 배경 이미지로 처리
+        map1_data = []  # seed map은 tilemap 없이 (아이템 중심)
+        map2_data = []  # shop map은 tilemap 없이 단순 배경 이미지로 처리
 
         self.maps = [
             {
                 "type": "spawn map",
                 "size": [2000, 2000],
-                "background_path": None,  # spawn map은 tilemap을 사용
+                "background_path": None,  # spawn map은 tilemap 사용
                 "tilemap": map0_data,
                 "obstacles": [
                     {"x": 400, "y": 400, "width": 100, "height": 100},
@@ -198,7 +207,7 @@ class Map:
             {
                 "type": "shop map",
                 "size": [600, 600],
-                "background_path": shop_path,  # shop map은 shop_path 배경 이미지를 사용
+                "background_path": shop_path,  # shop map은 배경 이미지 사용
                 "tilemap": map2_data,
                 "obstacles": [
                     {"x": 0, "y": 500, "width": 800, "height": 100}
@@ -249,13 +258,16 @@ class Map:
     def change_map(self, target_map_index, start_pos, player):
         self.current_map_index = target_map_index
         player.set_position(*start_pos)
-        current_map = self.get_current_map()
-        if self.tile_map:
-            self.tile_map.tiles.clear()
-            self.tile_map.obstacles.clear()
-        if current_map["tilemap"]:
-            self.tile_map = TileMap(len(current_map["tilemap"][0]), len(current_map["tilemap"]))
-            self.tile_map.generate(current_map["tilemap"])
+        # 이미 생성된 TileMap이 있으면 그대로 사용
+        if target_map_index in self.tilemaps and self.tilemaps[target_map_index] is not None:
+            self.tile_map = self.tilemaps[target_map_index]
+        else:
+            current_map = self.get_current_map()
+            if current_map["tilemap"]:
+                tilemap_obj = TileMap(len(current_map["tilemap"][0]), len(current_map["tilemap"]), self.tile_size)
+                tilemap_obj.generate(current_map["tilemap"])
+                self.tile_map = tilemap_obj
+                self.tilemaps[target_map_index] = tilemap_obj
 
     def add_item(self, item):
         self.get_current_map()["items"].append(item)
@@ -267,14 +279,12 @@ class Map:
         current_map = self.get_current_map()
         screen_size = (screen.get_width(), screen.get_height())
         
-        # type 값을 확인하여 배경 이미지를 결정합니다.
+        # 배경 이미지 처리
         if current_map["type"] == "shop map":
-            # shop map은 배경 이미지를 불러옴
             bg_image = self.load_background_image(shop_path, screen_size)
             if bg_image:
                 screen.blit(bg_image, (0, 0))
         else:
-            # 다른 맵은 tilemap이나 다른 배경 방식 적용 (예를 들어 spawn map은 tilemap)
             if self.tile_map:
                 self.tile_map.draw(screen, camera.camera_x, camera.camera_y)
         
@@ -307,7 +317,7 @@ class Map:
         
         seed_manager.update(current_map)
 
-    def plant_seed(self, player, x, y):
+    def plant_seed(self, player, x, y, current_game_time):
         tile_x = (x + 20) // self.tile_size
         tile_y = (y + 20) // self.tile_size
         if self.tile_map:
@@ -316,20 +326,18 @@ class Map:
                     if tile.tile_type == "soil":
                         tile.tile_type = "planted soil"
                         tile.crop_type = player.inventory[0]["name"]
-                        tile.planted_time = 0
+                        tile.planted_time = current_game_time  # 절대 시간 저장
                         tile.growth_stage = 0
                         return True
-                    else:
-                        print("흙이 아닙니다.")
-                        return False
-        print("해당 위치에 타일이 없습니다.")
         return False
     
-    def update_crop(self, dt):
-        if self.tile_map:
-            for tile in self.tile_map.tiles:
-                tile.update_growth(dt)
-                
+    def update_crop(self, current_game_time):
+        # 모든 맵의 TileMap에 대해 작물 성장 업데이트
+        for tilemap in self.tilemaps.values():
+            if tilemap:
+                for tile in tilemap.tiles:
+                    tile.update_growth(current_game_time)
+
     def harvest_crop(self, player, x, y):
         tile_x = (x + 20) // self.tile_size
         tile_y = (y + 20) // self.tile_size
@@ -384,9 +392,7 @@ class SeedManager:
     def update(self, current_map):
         current_time = pygame.time.get_ticks()
         if current_map["type"] == "seed map":
-            current_map_seeds = [
-                seed for seed in current_map["items"] if seed["type"] == "seed"
-            ]
+            current_map_seeds = [seed for seed in current_map["items"] if seed["type"] == "seed"]
             if len(current_map_seeds) == 0:
                 print("맵에 씨앗이 없어 초기화 중...")
                 for _ in range(self.max_seeds):
@@ -408,10 +414,7 @@ class SeedManager:
         transition_zones = current_map["transition_zones"]
 
         while True:
-            seed_position = (
-                random.randint(0, map_size[0]),
-                random.randint(0, map_size[1]),
-            )
+            seed_position = (random.randint(0, map_size[0]), random.randint(0, map_size[1]))
             valid = True
             for obstacle in obstacles:
                 obstacle_rect = pygame.Rect(obstacle["x"], obstacle["y"], obstacle["width"], obstacle["height"])

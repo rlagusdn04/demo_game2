@@ -1,40 +1,40 @@
 {
     "player": {
-        "map": 2,
-        "x": 0,
-        "y": 320,
+        "map": 0,
+        "x": 250,
+        "y": 220,
         "level": 9,
-        "experience": 30,
+        "experience": 50,
         "health": 100,
-        "money": 10210,
+        "money": 28360,
         "inventory": [
             {
                 "id": 0,
                 "type": "seed",
                 "name": "Corn Seed",
                 "quantity": 54,
-                "price": 100
+                "price": 10
             },
             {
                 "id": 1,
                 "type": "seed",
                 "name": "apple Seed",
                 "quantity": 0,
-                "price": 200
+                "price": 10
             },
             {
                 "id": 2,
                 "type": "seed",
                 "name": "carrot Seed",
-                "quantity": 42,
-                "price": 50
+                "quantity": 9,
+                "price": 10
             },
             {
                 "id": 3,
                 "type": "crop",
                 "name": "corn",
-                "quantity": 27,
-                "price": 500
+                "quantity": 7,
+                "price": 100
             }
         ]
     },
@@ -47,10 +47,9 @@
             "x": 150,
             "y": 150,
             "dialogue": [
-                "!!!",
                 "Hi",
                 "It's a nice day :)",
-                "sell?",
+                "click the item you want to sell. [Esc to exit]",
                 "good bye"
             ]
         }

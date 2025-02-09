@@ -46,12 +46,12 @@ class NPC:
                     self.interaction = False
                     return
                 
-                if self.type == "shop" and self.sell_check == False and self.dialogue[self.current_dialogue_index] == "sell?":  # 거래 시작
+                if self.type == "shop" and self.sell_check == False and "sell" in self.dialogue[self.current_dialogue_index] :  # 거래 시작
                     self.sell_check = True  # 판매 상태 변경
                     self.sell(player, camera, event)
 
     def sell(self, player, camera, event):
-        items = [3]  # 판매 가능한 품목 ID 리스트
+        items = [0,1,2,3]  # 판매 가능한 품목 ID 리스트
         player.state = "selling"
    
         if self.sell_check:  # 거래 가능 상태인지 확인

@@ -16,6 +16,8 @@ def main():
     screen_width = 800
     screen_height = 600
 
+    game_time = 0
+
     screen = pygame.display.set_mode((screen_width, screen_height))
     pygame.display.set_caption("게임 타이틀")
 
@@ -37,14 +39,15 @@ def main():
     SaveLoad.load_game(player, game_map, npc_manager)
 
     while running:
-        dt = clock.tick(60)  # 밀리초 단위의 경과 시간 계산
+        dt = clock.tick(60)  # 프레임별 경과 시간 (밀리초)
+        game_time += dt     # 게임 전체의 누적 시간을 업데이트
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_e:  # 'E' 키를 눌러 작물 수확 및 상호작용
-                    player.plant(event, game_map) # 작물 심기
+                    player.plant(event, game_map, game_time) # 작물 심기
                     game_map.harvest_crop(player, player.x, player.y)
                     #player.use_hand_item(event,game_map)
                     player.use_item(event)
@@ -61,7 +64,7 @@ def main():
 
         camera.update(player)
         npc_manager.update(game_map)
-        game_map.update_crop(dt)
+        game_map.update_crop(game_time)
 
         screen.fill((0, 0, 0))
         game_map.draw(screen, camera, seed_manager)

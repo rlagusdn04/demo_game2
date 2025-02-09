@@ -46,7 +46,7 @@
                     "planted soil",
                     "planted soil",
                     "planted soil",
-                    "planted soil",
+                    "soil",
                     "planted soil",
                     "grass",
                     "grass"
@@ -160,15 +160,6 @@
                 {
                     "map_index": 1,
                     "position": [
-                        58,
-                        869
-                    ],
-                    "type": "seed",
-                    "id": 0
-                },
-                {
-                    "map_index": 1,
-                    "position": [
                         251,
                         225
                     ],
@@ -196,8 +187,8 @@
                 {
                     "map_index": 1,
                     "position": [
-                        114,
-                        677
+                        984,
+                        378
                     ],
                     "type": "seed",
                     "id": 1

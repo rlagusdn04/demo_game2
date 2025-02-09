@@ -253,12 +253,12 @@ class Player:
             else:
                 self.pick_up_timer = 0
     
-    def plant(self,event,game_map):
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_e:  # E키를 누르면 씨앗 심기
-                if self.inventory[0]["quantity"] > 0:
-                    if game_map.plant_seed(self, self.x, self.y):
-                        self.inventory[0]["quantity"] -= 1
-                        self.current_animation = "pick_up_right"
+    def plant(self, event, game_map, current_game_time):
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_e:
+            if self.inventory[0]["quantity"] > 0:
+                if game_map.plant_seed(self, self.x, self.y, current_game_time):
+                    self.inventory[0]["quantity"] -= 1
+                    self.current_animation = "pick_up_right"
 
     def use_item(self,event):
         if event.type == pygame.KEYDOWN and event.key == pygame.K_e:

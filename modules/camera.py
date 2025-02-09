@@ -104,7 +104,7 @@ class Camera:
                 
     def select_item(self):
         return self.selected_item
-
+    
                 
     def handUI(self, screen):
         """플레이어가 손에 든 아이템을 화면 중앙 하단에 표시"""
